@@ -42,9 +42,45 @@
     // ---- iOS Safari audio unlock (v0.4.3): track every WebAudio context Unity creates and resume it
     //      inside a real user-gesture handler (touchend / pointerup / click — iOS ignores touchstart).
     (function () {
+      // v0.4.4: the iPhone ring/silent switch mutes Web Audio (but not media playback). Ask for the 'playback'
+      // session (Safari 16.4+/17) up front; older iOS gets the silent <audio> trick inside the first gesture below.
+      var session = 'n/a';
+      try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; session = navigator.audioSession.type; } } catch (e) { session = 'err'; }
       var Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
       var ctxs = window.__hrAudioCtxs = [];
-      function Wrapped(a, b) { var c = b !== undefined ? new Ctx(a, b) : (a !== undefined ? new Ctx(a) : new Ctx()); ctxs.push(c); return c; }
+      // output meter: every connection into a context's destination is mirrored into an AnalyserNode, so the
+      // ?fps=1 overlay and the WebKit check can prove real non-silent output (not just an advancing clock)
+      var an = [], conn0 = AudioNode.prototype.connect;
+      AudioNode.prototype.connect = function (dst) {
+        var r = conn0.apply(this, arguments);
+        try { if (dst && dst === this.context.destination && this.context.__hrAn && this !== this.context.__hrAn) conn0.call(this, this.context.__hrAn); } catch (e) {}
+        return r;
+      };
+      function meter(c) { try { var a = c.createAnalyser(); a.fftSize = 512; c.__hrAn = a; an.push(a); } catch (e) {} }
+      var peak = 0, buf = new Float32Array(512);
+      window.__hrAudioLevel = function () {
+        var m = 0; an.forEach(function (a) { a.getFloatTimeDomainData(buf); for (var i = 0; i < buf.length; i++) { var v = Math.abs(buf[i]); if (v > m) m = v; } });
+        peak = Math.max(m, peak * 0.9); return m;
+      };
+      window.__hrAudioDebug = function () {
+        var c = ctxs[0]; var lv = window.__hrAudioLevel();
+        try { if (navigator.audioSession) session = navigator.audioSession.type; } catch (e) {}
+        return (c ? c.state + ' ' + c.sampleRate + 'Hz' : 'no-ctx') + ' n=' + ctxs.length + ' lvl=' + lv.toFixed(3) + ' pk=' + peak.toFixed(3) + ' sess=' + session + ' html=' + (silentEl ? (silentEl.paused ? 'paused' : 'on') : '-');
+      };
+      var silentEl = null;
+      function silentMedia() {
+        // a looping, NOT muted, silent media element switches older iOS to the playback category (ignores silent switch)
+        if (silentEl) { if (silentEl.paused) silentEl.play().catch(function () {}); return; }
+        try {
+          var n = 4410, b = new ArrayBuffer(44 + n * 2), d = new DataView(b), w = function (o, s) { for (var i = 0; i < s.length; i++) d.setUint8(o + i, s.charCodeAt(i)); };
+          w(0, 'RIFF'); d.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+          d.setUint32(24, 44100, true); d.setUint32(28, 88200, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); w(36, 'data'); d.setUint32(40, n * 2, true);
+          silentEl = document.createElement('audio'); silentEl.setAttribute('playsinline', ''); silentEl.setAttribute('x-webkit-airplay', 'deny');
+          silentEl.loop = true; silentEl.preload = 'auto'; silentEl.src = URL.createObjectURL(new Blob([b], { type: 'audio/wav' }));
+          silentEl.play().catch(function (e) { console.log('[page] silent media play failed ' + e); });
+        } catch (e) { console.log('[page] silent media err ' + e); }
+      }
+      function Wrapped(a, b) { var c = b !== undefined ? new Ctx(a, b) : (a !== undefined ? new Ctx(a) : new Ctx()); ctxs.push(c); meter(c); return c; }
       Wrapped.prototype = Ctx.prototype;
       window.AudioContext = Wrapped; if (window.webkitAudioContext) window.webkitAudioContext = Wrapped;
       var done = false, waiting = false;
@@ -54,6 +90,8 @@
         if (!done && window.unityInstance) { done = true; try { window.unityInstance.SendMessage('AudioManager', 'OnWebAudioUnlocked', st); } catch (e) {} }
       }
       function unlock() {
+        try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch (e) {}
+        silentMedia();
         ctxs.forEach(function (c) {
           try {
             if (c.state !== 'running') c.resume();
@@ -74,6 +112,7 @@
         });
       }
       ['touchend', 'pointerup', 'mouseup', 'click', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, true); });
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) ctxs.forEach(function (c) { if (c.state !== 'running') { try { c.resume(); } catch (e) {} } }); });
       window.__hrAudioState = function () { return ctxs.map(function (c) { return c.state + '@' + c.currentTime.toFixed(2); }).join(','); };
       window.__hrShowTapIfSuspended = function () {
         var sus = ctxs.length && ctxs.some(function (c) { return c.state !== 'running'; });
