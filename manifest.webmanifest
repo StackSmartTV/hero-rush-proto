@@ -1,0 +1,14 @@
+{
+  "name": "Hero Rush",
+  "short_name": "Hero Rush",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#140726",
+  "theme_color": "#2a0f55",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

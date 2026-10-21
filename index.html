@@ -6,10 +6,16 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#2a0f55">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hero Rush">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
   <title>Hero Rush</title>
   <style>
     html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#140726; touch-action:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; overscroll-behavior:none; }
     #wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
+    /* v0.5.1: keep the canvas (and its bottom buttons) above the iPhone home indicator / Safari bottom toolbar and below the notch */
+    @supports (padding: env(safe-area-inset-bottom)) { #wrap { top:env(safe-area-inset-top); bottom:env(safe-area-inset-bottom); } }
     /* phones: fill the screen. desktops: show a 9:19.5 portrait column */
     #unity-canvas { width:100%; height:100%; display:block; background:#2a0f55; outline:none; }
     @media (min-aspect-ratio: 10/16) { #unity-canvas { height:100%; width:auto; aspect-ratio: 9 / 19.5; } }

@@ -4,10 +4,10 @@
     "name": "unity-cli",
     "version": "1.0.0-beta.13"
   },
-  "outcome": "success",
-  "exitCode": 0,
-  "startedAt": "2026-10-19T15:21:17.346Z",
-  "endedAt": "2026-10-19T15:24:02.262Z",
+  "outcome": "failure",
+  "exitCode": 1,
+  "startedAt": "2026-10-21T00:04:38.916Z",
+  "endedAt": "2026-10-21T00:04:48.343Z",
   "editor": {
     "version": "6000.3.26f1",
     "changeset": "de8167e7440c",
@@ -17,7 +17,12 @@
     "target": "WebGL",
     "executeMethod": "HeroRushBuild.BuildWebGL",
     "outputPath": "Builds/WebGL",
-    "logFile": "Logs/build-WebGL-1792423277124.log"
+    "logFile": "Logs/build-WebGL-1792541078667.log"
+  },
+  "source": {
+    "vcs": "git",
+    "revision": "94f803fd6bc6645887ab951964cd63a74f7a4e24",
+    "dirty": false
   },
   "packages": {
     "source": "packages-lock.json",
