@@ -127,11 +127,21 @@
     })();
     var canvas = document.querySelector("#unity-canvas");
     var buildUrl = "Build";
+    // v0.5.5 iPhone fix: phones / tablets with ASTC get the ASTC data file (the DXT one is decompressed to RGBA in software
+    // on iOS - 4-8x the texture memory; late in a level the boss textures / skin buffers failed). ?astc=0 forces DXT.
+    var dataFile = "HeroRush-055d.data.unityweb";
+    try {
+      var mob = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var gl2 = document.createElement("canvas").getContext("webgl2");
+      var astc = (mob && gl2 && gl2.getExtension("WEBGL_compressed_texture_astc") && !/[?&]astc=0/.test(location.search)) || /[?&]astc=1/.test(location.search);
+      if (astc) dataFile = dataFile.replace(".data", ".mobile.data");
+      window.hrAstc = !!astc; window.hrDataFile = dataFile;
+    } catch (e) {}
     var config = {
       arguments: [],
-      dataUrl: buildUrl + "/WebGL.data.unityweb",
-      frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
-      codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+      dataUrl: buildUrl + "/" + dataFile,
+      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-055d.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-055d.framework.js.unityweb"),
+      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-055d.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-055d.wasm.unityweb"),
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Stack Smarter",
       productName: "Hero Rush",
@@ -142,7 +152,7 @@
       showBanner: function (m, t) { if (t === 'error') document.querySelector('#msg').textContent = m; console.log(m); }
     };
     var script = document.createElement("script");
-    script.src = buildUrl + "/WebGL.loader.js";
+    script.src = buildUrl + "/HeroRush-055d.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) {
         document.querySelector("#fill").style.width = (100 * p) + "%";
