@@ -57,12 +57,25 @@
       // output meter: every connection into a context's destination is mirrored into an AnalyserNode, so the
       // ?fps=1 overlay and the WebKit check can prove real non-silent output (not just an advancing clock)
       var an = [], conn0 = AudioNode.prototype.connect;
+      // v0.5.9b loudness: everything Unity sends to the destination goes through one master stage instead: x1.5 (+3.5 dB,
+      // ?mgain=1 = old level) baked into a static soft-knee curve (exactly linear below 0.8 FS, smooth tanh knee above,
+      // never past full scale) - a waveshaper, not a compressor, so there is no gain riding / pumping. Meter = post-master.
+      var dc0 = AudioNode.prototype.disconnect;
+      var mg = (function () { var m = /[?&]mgain=([0-9.]+)/.exec(location.search); var g = m ? parseFloat(m[1]) : 1.5; return isFinite(g) && g > 0 ? Math.min(g, 3) : 1.5; })();
+      window.__hrMasterGain = mg;
+      function softCurve(g) { var n = 4097, cv = new Float32Array(n); for (var i = 0; i < n; i++) { var x = i / (n - 1) * 2 - 1, u = Math.abs(x * g), y = u <= 0.8 ? u : 0.8 + 0.2 * Math.tanh((u - 0.8) / 0.2); cv[i] = x < 0 ? -y : y; } return cv; }
       AudioNode.prototype.connect = function (dst) {
-        var r = conn0.apply(this, arguments);
-        try { if (dst && dst === this.context.destination && this.context.__hrAn && this !== this.context.__hrAn) conn0.call(this, this.context.__hrAn); } catch (e) {}
-        return r;
+        try { var M = this.context && this.context.__hrMaster; if (dst && M && dst === this.context.destination && this !== M) { conn0.call(this, M); return dst; } } catch (e) {}
+        return conn0.apply(this, arguments);
       };
-      function meter(c) { try { var a = c.createAnalyser(); a.fftSize = 512; c.__hrAn = a; an.push(a); } catch (e) {} }
+      AudioNode.prototype.disconnect = function (dst) {
+        try { var M = this.context && this.context.__hrMaster; if (dst && M && dst === this.context.destination && this !== M) return dc0.call(this, M); } catch (e) {}
+        return dc0.apply(this, arguments);
+      };
+      function meter(c) {
+        try { var a = c.createAnalyser(); a.fftSize = 512; c.__hrAn = a; an.push(a); } catch (e) {}
+        try { var ws = c.createWaveShaper(); ws.curve = softCurve(mg); ws.oversample = 'none'; conn0.call(ws, c.destination); if (c.__hrAn) conn0.call(ws, c.__hrAn); c.__hrMaster = ws; } catch (e) { console.log('[page] master stage err ' + e); }
+      }
       var peak = 0, buf = new Float32Array(512);
       window.__hrAudioLevel = function () {
         var m = 0; an.forEach(function (a) { a.getFloatTimeDomainData(buf); for (var i = 0; i < buf.length; i++) { var v = Math.abs(buf[i]); if (v > m) m = v; } });
@@ -137,7 +150,7 @@
     var buildUrl = "Build";
     // v0.5.5 iPhone fix: phones / tablets with ASTC get the ASTC data file (the DXT one is decompressed to RGBA in software
     // on iOS - 4-8x the texture memory; late in a level the boss textures / skin buffers failed). ?astc=0 forces DXT.
-    var dataFile = "HeroRush-059a.data.unityweb";
+    var dataFile = "HeroRush-059b.data.unityweb";
     try {
       var mob = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       var gl2 = document.createElement("canvas").getContext("webgl2");
@@ -148,8 +161,8 @@
     var config = {
       arguments: [],
       dataUrl: buildUrl + "/" + dataFile,
-      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059a.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-059a.framework.js.unityweb"),
-      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059a.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-059a.wasm.unityweb"),
+      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059b.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-059b.framework.js.unityweb"),
+      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059b.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-059b.wasm.unityweb"),
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Stack Smarter",
       productName: "Hero Rush",
@@ -160,7 +173,7 @@
       showBanner: function (m, t) { if (t === 'error') document.querySelector('#msg').textContent = m; console.log(m); }
     };
     var script = document.createElement("script");
-    script.src = buildUrl + "/HeroRush-059a.loader.js";
+    script.src = buildUrl + "/HeroRush-059b.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) {
         document.querySelector("#fill").style.width = (100 * p) + "%";
