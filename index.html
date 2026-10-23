@@ -150,7 +150,7 @@
     var buildUrl = "Build";
     // v0.5.5 iPhone fix: phones / tablets with ASTC get the ASTC data file (the DXT one is decompressed to RGBA in software
     // on iOS - 4-8x the texture memory; late in a level the boss textures / skin buffers failed). ?astc=0 forces DXT.
-    var dataFile = "HeroRush-059b.data.unityweb";
+    var dataFile = "HeroRush-059b2.data.unityweb";
     try {
       var mob = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       var gl2 = document.createElement("canvas").getContext("webgl2");
@@ -161,8 +161,8 @@
     var config = {
       arguments: [],
       dataUrl: buildUrl + "/" + dataFile,
-      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059b.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-059b.framework.js.unityweb"),
-      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059b.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-059b.wasm.unityweb"),
+      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059b2.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-059b2.framework.js.unityweb"),
+      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-059b2.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-059b2.wasm.unityweb"),
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Stack Smarter",
       productName: "Hero Rush",
@@ -173,7 +173,7 @@
       showBanner: function (m, t) { if (t === 'error') document.querySelector('#msg').textContent = m; console.log(m); }
     };
     var script = document.createElement("script");
-    script.src = buildUrl + "/HeroRush-059b.loader.js";
+    script.src = buildUrl + "/HeroRush-059b2.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) {
         document.querySelector("#fill").style.width = (100 * p) + "%";
