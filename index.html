@@ -119,7 +119,7 @@
       }
       ['touchend', 'pointerup', 'mouseup', 'click', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, true); });
       // v0.5.6 Flick Shot auto-pause when the tab is hidden or the window loses focus (no-op outside the mini-game)
-      (function () { function ap() { try { if (window.unityInstance && window.hrFlickOpen !== false) window.unityInstance.SendMessage('FlickShotGame', 'AutoPause'); } catch (e) {} }
+      (function () { function ap() { try { if (window.unityInstance && window.hrFlickOpen !== false) window.unityInstance.SendMessage('FlickShotGame', 'AutoPause'); } catch (e) {} try { if (window.unityInstance) window.unityInstance.SendMessage('HeroSlashGame', 'AutoPause'); } catch (e) {} }
         document.addEventListener('visibilitychange', function () { if (document.hidden) ap(); }); window.addEventListener('blur', ap); window.addEventListener('pagehide', ap); })();
       document.addEventListener('visibilitychange', function () { if (!document.hidden) ctxs.forEach(function (c) { if (c.state !== 'running') { try { c.resume(); } catch (e) {} } }); });
       window.__hrAudioState = function () { return ctxs.map(function (c) { return c.state + '@' + c.currentTime.toFixed(2); }).join(','); };
@@ -132,7 +132,7 @@
     var buildUrl = "Build";
     // v0.5.5 iPhone fix: phones / tablets with ASTC get the ASTC data file (the DXT one is decompressed to RGBA in software
     // on iOS - 4-8x the texture memory; late in a level the boss textures / skin buffers failed). ?astc=0 forces DXT.
-    var dataFile = "HeroRush-057a.data.unityweb";
+    var dataFile = "HeroRush-058a.data.unityweb";
     try {
       var mob = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       var gl2 = document.createElement("canvas").getContext("webgl2");
@@ -143,8 +143,8 @@
     var config = {
       arguments: [],
       dataUrl: buildUrl + "/" + dataFile,
-      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-057a.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-057a.framework.js.unityweb"),
-      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-057a.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-057a.wasm.unityweb"),
+      frameworkUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-058a.framework.js.unityweb".replace(".framework", ".mobile.framework") : "HeroRush-058a.framework.js.unityweb"),
+      codeUrl: buildUrl + "/" + (window.hrAstc ? "HeroRush-058a.wasm.unityweb".replace(".wasm", ".mobile.wasm") : "HeroRush-058a.wasm.unityweb"),
       streamingAssetsUrl: "StreamingAssets",
       companyName: "Stack Smarter",
       productName: "Hero Rush",
@@ -155,7 +155,7 @@
       showBanner: function (m, t) { if (t === 'error') document.querySelector('#msg').textContent = m; console.log(m); }
     };
     var script = document.createElement("script");
-    script.src = buildUrl + "/HeroRush-057a.loader.js";
+    script.src = buildUrl + "/HeroRush-058a.loader.js";
     script.onload = function () {
       createUnityInstance(canvas, config, function (p) {
         document.querySelector("#fill").style.width = (100 * p) + "%";
