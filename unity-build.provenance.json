@@ -6,8 +6,8 @@
   },
   "outcome": "success",
   "exitCode": 0,
-  "startedAt": "2026-10-23T03:30:45.221Z",
-  "endedAt": "2026-10-23T03:39:37.536Z",
+  "startedAt": "2026-10-23T07:58:34.394Z",
+  "endedAt": "2026-10-23T08:18:17.633Z",
   "editor": {
     "version": "6000.3.26f1",
     "changeset": "de8167e7440c",
@@ -19,8 +19,8 @@
   },
   "source": {
     "vcs": "git",
-    "revision": "6dcf901a49b27948ac822dec82848c6cd7ec3c76",
-    "dirty": false
+    "revision": "0a8c7b3d4d8a4f700c9fca92bd1977a0cd3559c1",
+    "dirty": true
   },
   "packages": {
     "source": "packages-lock.json",
@@ -36,10 +36,15 @@
       "com.unity.mathematics": "1.3.3",
       "com.unity.multiplayer.center": "1.0.1",
       "com.unity.nuget.mono-cecil": "1.11.6",
+      "com.unity.nuget.newtonsoft-json": "3.2.2",
+      "com.unity.purchasing": "5.4.4",
       "com.unity.render-pipelines.core": "17.3.0",
       "com.unity.render-pipelines.universal": "17.3.0",
       "com.unity.render-pipelines.universal-config": "17.0.3",
       "com.unity.searcher": "4.9.5",
+      "com.unity.services.core": "1.18.0",
+      "com.unity.services.deployment": "1.7.2",
+      "com.unity.services.deployment.api": "1.1.3",
       "com.unity.shadergraph": "17.3.0",
       "com.unity.test-framework": "1.6.0",
       "com.unity.test-framework.performance": "3.5.0",
