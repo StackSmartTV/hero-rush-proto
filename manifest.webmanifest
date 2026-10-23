@@ -1,6 +1,6 @@
 {
-  "name": "Hero Rush",
-  "short_name": "Hero Rush",
+  "name": "Super Squad Dash",
+  "short_name": "Squad Dash",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
